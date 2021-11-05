@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css"></link> 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css"></link> 
+
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+      <div>
+          {{counter}}
+          <button type="button" @click="clickCount">+</button>
+      </div>
+      <div>
+          {{text}}
+      </div>
+      
+  </div>
+  <div id="map"></div>
+  
+  <script src="https://unpkg.com/vue@next"></script>
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+  
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  
+
+
+    
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    text: 'Hello',
+                    counter: 0,
+                    cityName:'',
+                    select: {
+                      city: '台北市',
+                      area: '中正區',
+                    },
+                };
+            },
+            //生命周期(函式)
+            created() {
+                this.counter = 10;
+            },
+            //方法(物件)
+            methods: {
+                clickCount(){
+                    this.counter++;
+                }
+            },
+            mounted() {
+                var map = L.map('map', {
+                    center: [22.604799,120.2976256],
+                    zoom: 16
+                });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                var greenIcon = new L.Icon({
+                        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    });
+                var data = [
+                        {'name':'軟體園區',lat:22.604799,lng:120.2976256},
+                        {'name':'ikea',lat:22.6066728,lng:120.3015429}
+                    ];
+                var markers = new L.MarkerClusterGroup().addTo(map);
+
+                let self = this;
+                axios({
+                    methods: 'get',
+                    url: 'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'
+                })
+                .then((resp) => {
+                    var data = resp.data.features;
+                    for(let i =0;data.length>i;i++){
+                        markers.addLayer(L.marker([data[i].geometry.coordinates[1],data[i].geometry.coordinates[0]], {icon: greenIcon}).bindPopup(data[i].properties.name));
+                    }
+                    map.addLayer(markers);
+                });
+            }
+        });
+        app.mount('#app');
+      </script>
+</body>
+</html>
