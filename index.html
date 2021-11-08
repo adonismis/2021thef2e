@@ -31,8 +31,6 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   
 
-
-    
     <script>
         const app = Vue.createApp({
             data() {
@@ -90,9 +88,101 @@
                     }
                     map.addLayer(markers);
                 });
+
+                axios({
+                    methods: 'get',
+                    url: 'https://link.motc.gov.tw/v2/Basic/City?$format=JSON'
+                })
+                .then((resp) => {
+                    consoloe.log(resp)
+                });
+
+
+                axios.get(
+                    'https://link.motc.gov.tw/v2/Basic/City?$format=JSON',
+                    {
+                        headers: getAuthorizationHeader()
+                    }
+                )
+                .then(function (response) {
+                    document.querySelector('body').textContent=JSON.stringify(response.data);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                }); 
+
+                function getAuthorizationHeader() {
+                    //  填入自己 ID、KEY 開始
+                    let AppID = '6c12d83e847a4d7084fb6c5a1911528d';
+                    let AppKey = 'Y9LQlj1fHBrc02ql5a2s5G2tZFw';
+                    //  填入自己 ID、KEY 結束
+                    let GMTString = new Date().toGMTString();
+                    let ShaObj = new jsSHA('SHA-1', 'TEXT');
+                    ShaObj.setHMACKey(AppKey, 'TEXT');
+                    ShaObj.update('x-date: ' + GMTString);
+                    let HMAC = ShaObj.getHMAC('B64');
+                    let Authorization = 'hmac username=\"' + AppID + '\", algorithm=\"hmac-sha1\", headers=\"x-date\", signature=\"' + HMAC + '\"';
+                    return { 'Authorization': Authorization, 'X-Date': GMTString }; 
+                }
+
+
+
             }
         });
         app.mount('#app');
+
+
+        /*
+        取得[縣市]之City列表：
+            https://link.motc.gov.tw/v2/Basic/City?$format=JSON
+            GET /v2/Basic/City
+            BasicCity {
+                CityID (string, optional): 縣市代碼 ,
+                CityName (string, optional): 縣市名稱(中文) ,
+                CityCode (string, optional): 縣市簡碼(國際ISO 3166-2 三碼縣市代碼) ,
+                City (string, optional): 縣市(英文) ,
+                CountyID (string, optional): 縣市代碼(簡稱:縣市碼) ,
+                Version (string, optional): 資料版本編號
+            }
+        取得指定[縣市(City)]之鄉鎮市區列表：
+            https://link.motc.gov.tw/v2/Basic/City/Taipei/Town?$format=JSON
+            GET /v2/Basic/City/{City}/Town
+            Town {
+                TownName (string, optional): 鄉鎮市區名稱(中文) ,
+                TownCode (string, optional): 鄉鎮市區代碼 ,
+                CityName (string, optional): 縣市名稱(中文) ,
+                Version (string, optional): 資料版本編號
+            }
+
+
+        axios.get(
+            'https://ptx.transportdata.tw/MOTC/v2/Rail/TRA/Station?$top=10&$format=JSON',
+            {
+                headers: getAuthorizationHeader()
+            }
+        )
+        .then(function (response) {
+            document.querySelector('body').textContent=JSON.stringify(response.data);
+        })
+        .catch(function (error) {
+            console.log(error);
+        }); 
+
+        function getAuthorizationHeader() {
+            //  填入自己 ID、KEY 開始
+            let AppID = '6c12d83e847a4d7084fb6c5a1911528d';
+            let AppKey = 'Y9LQlj1fHBrc02ql5a2s5G2tZFw';
+            //  填入自己 ID、KEY 結束
+            let GMTString = new Date().toGMTString();
+            let ShaObj = new jsSHA('SHA-1', 'TEXT');
+            ShaObj.setHMACKey(AppKey, 'TEXT');
+            ShaObj.update('x-date: ' + GMTString);
+            let HMAC = ShaObj.getHMAC('B64');
+            let Authorization = 'hmac username=\"' + AppID + '\", algorithm=\"hmac-sha1\", headers=\"x-date\", signature=\"' + HMAC + '\"';
+            return { 'Authorization': Authorization, 'X-Date': GMTString }; 
+        }
+
+        */
       </script>
 </body>
 </html>
